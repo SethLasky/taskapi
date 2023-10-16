@@ -5,7 +5,7 @@ import doobie.util.transactor.Transactor
 
 import scala.util.Random
 
-case class Config(kafka: KafkaConfig, postgre: Option[PostgreConfig], http: HttpConfig)
+case class Config(kafka: KafkaConfig, postgre: PostgreConfig, http: HttpConfig)
 
 case class KafkaConfig(consumer: Option[KafkaConsumerConfig], producer: Option[KafkaProducerConfig])
 

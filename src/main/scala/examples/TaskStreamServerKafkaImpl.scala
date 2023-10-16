@@ -12,11 +12,21 @@ trait TaskStreamServerKafkaImpl extends TaskStreamServer[IO, KafkaConsumerConfig
   implicit protected val cs: ContextShift[IO]
   implicit protected val t: Timer[IO]
 
+  val map: Map[String, Task] = Map("id" -> Task(1,2, "", true))
+
   def streamChangesFromIntermediary(configOption: Option[KafkaConsumerConfig])(implicit F: Sync[IO], d: Decoder[Change]): Stream[IO, Change] = for {
     config <- Stream.eval(IO.fromOption(configOption)(new Throwable("Missing kafka config")))
     settings = defaultConsumerSettings(config.servers, config.groupId)
     stream <- consumeFromTopic(settings, config.topic).map(_.record.value).evalMap(value => IO.fromEither(decode[Change](value)))
   } yield stream
+
+
+  def f() = streamChangesFromIntermediary.map{ change =>
+    val e = map(change.newTask.id)
+    if change.orignalTask == e
+    else
+
+  }
 }
 
 case class Task(id: Int, ownerId: Int, detail: String, done: Boolean)

@@ -22,7 +22,7 @@ trait RestServer extends Http4sDsl[IO] with TaskStreamServerKafkaImpl with TaskW
   implicit protected val t: Timer[IO]
 
   def server(config: Config) = {
-    val transactor = config.postgre.map(_.transactor)
+    val transactor = config.postgre.transactor
     val service = HttpRoutes.of[IO] {
       case GET -> Root / "ping" => Ok("pong")
       case GET -> Root / "tasks" => Ok(streamChangesFromIntermediary(config.kafka.consumer))

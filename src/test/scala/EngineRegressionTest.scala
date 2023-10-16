@@ -1,4 +1,4 @@
-import cats.effect.{ContextShift, ExitCode, IO, Timer}
+import cats.effect.{ConcurrentEffect, ContextShift, ExitCode, IO, Timer}
 import examples.{Change, Task}
 import io.circe.fs2._
 import examples.engine.Engine
@@ -48,14 +48,14 @@ class EngineRegressionTest extends AnyWordSpecLike with Matchers with Http4sClie
   def intStream(number: Int) = Stream.emits(1 to number).covary[IO]
 
   def runStreamers(number: Int, client: Client[IO], tasks: Int) = intStream(number).map{ int =>
-    streamChanges(client, port(int).toString).take(tasks)
-  }.reduce(_ merge _).flatten
+    streamChanges(client, port(int).toString)
+  }.parJoinUnbounded
 
   def runEngines(number: Int) = intStream(number).mapAsync[IO, ExitCode](number){ int =>
     Engine.run(List(port(int).toString))
   }
 
-  def port(add: Int, default: Int = 8000) = default + add
+  def port(add: Int, default: Int = 6000) = default + add
 
   def checkEngines(number: Int, client: Client[IO]) = intStream(number).evalMap(int => ping(client, port(int).toString)).take(number)
 
